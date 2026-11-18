@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# 保持 BIM 文件原始字节，避免影响 SHA-256 校验
+*.ifc -text
+*.glb -text
