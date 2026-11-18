@@ -14,22 +14,16 @@ function applyLoadedConfig(next,version){
 }
 async function load(){
  try{
-  const response=await fetch((window.API_BASE||'')+'/api/config?ts='+Date.now(),{cache:'no-store'});
-  if(!response.ok)throw Error('配置接口返回 '+response.status);
-  const data=await response.json();applyLoadedConfig(data.config,data.version);return;
- }catch(apiError){
-  try{
-   const response=await fetch('/config.md?ts='+Date.now(),{cache:'no-store'});
-   if(!response.ok)throw Error('config.md 返回 '+response.status);
-   const content=await response.text();let hash=2166136261;
-   for(let i=0;i<content.length;i++)hash=Math.imul(hash^content.charCodeAt(i),16777619);
-   applyLoadedConfig(parseBrowserConfig(content),'md-'+(hash>>>0));return;
-  }catch(fileError){
-   if(!ver){const root=$('#app');if(root)root.innerHTML='<div class="loading" role="alert">无法载入项目配置。请确认本地软件服务正在运行，且 /api/config 或 /config.md 可以访问。<br><small>'+esc(apiError.message)+'；'+esc(fileError.message)+'</small></div>'}
-  }
+  const response=await fetch(new URL('config.md',document.baseURI),{cache:'no-store'});
+  if(!response.ok)throw Error('配置文件加载失败：'+response.status);
+  const content=await response.text();let hash=2166136261;
+  for(let i=0;i<content.length;i++)hash=Math.imul(hash^content.charCodeAt(i),16777619);
+  applyLoadedConfig(parseBrowserConfig(content),'md-'+(hash>>>0));
+ }catch(error){
+  const root=$('#app');if(root)root.innerHTML='<div class="loading" role="alert">网页配置加载失败，请刷新页面重试。<br><small>'+esc(error.message)+'</small></div>';
  }
 }
-setInterval(tick,1000);load();setInterval(load,1200);
+setInterval(tick,1000);load();
 
 // Optional exact-text overrides for all rendered screens. Config reload calls render().
 const contentOverrideObserver=new MutationObserver(()=>{
